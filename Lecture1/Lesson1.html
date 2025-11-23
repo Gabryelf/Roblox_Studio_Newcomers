@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система сбора монеток в Roblox - Полное руководство</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4cc9f0;
+            --secondary: #f72585;
+            --accent: #7209b7;
+            --dark: #0c0c0c;
+            --darker: #1a1a2e;
+            --darkest: #16213e;
+            --text: #ffffff;
+            --text-secondary: #b0b0d0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, var(--darker) 50%, var(--darkest) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .presentation-container {
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .presentation {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+        }
+
+        .presentation.active {
+            display: block;
+            animation: slideIn 0.8s ease-out;
+        }
+
+        .slide {
+            background: rgba(30, 30, 46, 0.95);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            padding: 25px;
+            width: 100%;
+            min-height: calc(100vh - 40px);
+            max-height: calc(100vh - 40px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .slide::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .slide::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .slide::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .slide::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: 20px 20px 0 0;
+        }
+
+        .title-slide {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(76, 201, 240, 0.1), rgba(114, 9, 183, 0.1));
+            padding: 40px 20px;
+        }
+
+        .title {
+            font-size: clamp(2.5em, 6vw, 5em);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            text-shadow: 0 0 50px rgba(76, 201, 240, 0.4);
+            line-height: 1.1;
+            word-wrap: break-word;
+        }
+
+        .subtitle {
+            font-size: clamp(1.2em, 3vw, 2.2em);
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-weight: 300;
+            line-height: 1.4;
+        }
+
+        .author {
+            font-size: clamp(1em, 2.5vw, 1.6em);
+            color: var(--primary);
+            background: rgba(76, 201, 240, 0.1);
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: 1px solid var(--primary);
+            margin-top: 20px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 30px;
+            }
+        }
+
+        .content-grid-3 {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .content-grid-3 {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 25px;
+            }
+        }
+
+        .text-content {
+            padding: 0;
+        }
+
+        .code-content {
+            background: #1e1e2e;
+            border: 2px solid #333344;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.9em, 2vw, 1.1em);
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .code-content::before {
+            content: '📜 Код';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .slide-title {
+            font-size: clamp(1.8em, 4vw, 3em);
+            color: var(--primary);
+            margin-bottom: 25px;
+            border-left: 4px solid var(--secondary);
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .slide-text {
+            font-size: clamp(1.1em, 2.5vw, 1.7em);
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
+
+        .features-list {
+            list-style: none;
+            font-size: clamp(1em, 2.2vw, 1.5em);
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .features-list li {
+            margin-bottom: 15px;
+            padding-left: 35px;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+
+        .features-list li:hover {
+            transform: translateX(5px);
+        }
+
+        .features-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.1em;
+            background: rgba(76, 201, 240, 0.2);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon {
+            font-size: clamp(2.5em, 6vw, 4em);
+            margin-bottom: 20px;
+            text-align: center;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 480px) {
+            .controls {
+                bottom: 10px;
+                right: 10px;
+                gap: 10px;
+            }
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            color: white;
+            font-size: 1.4em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @media (min-width: 768px) {
+            .control-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 1.6em;
+            }
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(76, 201, 240, 0.5);
+        }
+
+        .progress-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+            width: 0%;
+            transition: width 0.4s ease;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .slide-counter {
+            position: fixed;
+            bottom: 15px;
+            left: 15px;
+            font-size: 1em;
+            color: var(--text-secondary);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+
+        @media (max-width: 480px) {
+            .slide-counter {
+                font-size: 0.9em;
+                padding: 6px 12px;
+            }
+        }
+
+        .coin-animation {
+            text-align: center;
+            animation: coinSpin 4s linear infinite;
+            font-size: clamp(4em, 12vw, 8em);
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+        }
+
+        .code-highlight {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+
+        .string {
+            color: #ce9178;
+        }
+
+        .keyword {
+            color: #569cd6;
+        }
+
+        .number {
+            color: #b5cea8;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        @media (min-width: 768px) {
+            .step-container {
+                flex-direction: row;
+                align-items: flex-start;
+            }
+        }
+
+        .step-number {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(76, 201, 240, 0.3);
+            flex-shrink: 0;
+        }
+
+        @media (min-width: 768px) {
+            .step-number {
+                width: 70px;
+                height: 70px;
+                font-size: 1.7em;
+            }
+        }
+
+        .step-content {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 3px solid var(--primary);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .step-title {
+            font-size: clamp(1.2em, 2.8vw, 1.6em);
+            color: var(--primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .step-description {
+            font-size: clamp(1em, 2.2vw, 1.3em);
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .github-section {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+        }
+
+        @media (min-width: 768px) {
+            .github-section {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        .github-btn {
+            background: linear-gradient(135deg, #333, #6e5494);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: clamp(1em, 2.2vw, 1.2em);
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(110, 84, 148, 0.3);
+            text-align: center;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .github-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(110, 84, 148, 0.5);
+        }
+
+        .video-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin-top: 25px;
+            border: 2px solid var(--primary);
+        }
+
+        .video-placeholder {
+            background: linear-gradient(135deg, var(--darker), var(--darkest));
+            border-radius: 8px;
+            padding: 40px 20px;
+            margin: 15px 0;
+            border: 2px dashed var(--primary);
+        }
+
+        .tech-stack {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .tech-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid var(--primary);
+            transition: transform 0.3s ease;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tech-item:hover {
+            transform: translateY(-5px);
+            background: rgba(76, 201, 240, 0.1);
+        }
+
+        .tech-icon {
+            font-size: 2.5em;
+            margin-bottom: 12px;
+            color: var(--primary);
+        }
+
+        .tech-name {
+            font-size: 1.1em;
+            color: var(--text);
+            font-weight: bold;
+        }
+
+        @keyframes slideIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(30px) scale(0.95); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0) scale(1); 
+            }
+        }
+
+        @keyframes coinSpin {
+            0% { transform: rotateY(0deg) scale(1) rotate(0deg); }
+            25% { transform: rotateY(90deg) scale(1.1) rotate(10deg); }
+            50% { transform: rotateY(180deg) scale(1.2) rotate(0deg); }
+            75% { transform: rotateY(270deg) scale(1.1) rotate(-10deg); }
+            100% { transform: rotateY(360deg) scale(1) rotate(0deg); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .architecture-diagram {
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(1em, 2.5vw, 1.3em);
+            line-height: 1.8;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--primary);
+            overflow-x: auto;
+        }
+
+        .file-structure {
+            background: #1e1e2e;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: clamp(0.9em, 2.2vw, 1.1em);
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .mobile-warning {
+            display: none;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            background: var(--accent);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            z-index: 1001;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 767px) {
+            .mobile-warning {
+                display: block;
+            }
+            
+            .presentation {
+                padding: 10px;
+            }
+            
+            .slide {
+                padding: 20px 15px;
+                min-height: calc(100vh - 20px);
+                max-height: calc(100vh - 20px);
+            }
+        }
+
+        /* Улучшения для очень маленьких экранов */
+        @media (max-width: 360px) {
+            .title {
+                font-size: 2em;
+            }
+            
+            .subtitle {
+                font-size: 1.1em;
+            }
+            
+            .slide-title {
+                font-size: 1.5em;
+            }
+            
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2em;
+            }
+            
+            .step-number {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3em;
+            }
+        }
+
+        /* Поддержка горизонтальной ориентации на мобильных */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .slide {
+                min-height: auto;
+                max-height: none;
+                padding: 15px;
+            }
+            
+            .title-slide {
+                padding: 20px 15px;
+            }
+            
+            .coin-animation {
+                font-size: 3em;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-warning">
+        📱 Используйте свайпы для навигации или кнопки внизу справа
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="slide-counter" id="slideCounter">1 / 10</div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="prevSlide()" aria-label="Предыдущий слайд">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <button class="control-btn" onclick="nextSlide()" aria-label="Следующий слайд">
+            <i class="fas fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <div class="presentation-container">
+        <!-- Слайд 1: Заголовок -->
+        <div class="presentation active" id="slide1">
+            <div class="slide title-slide">
+                <div class="coin-animation">🪙</div>
+                <h1 class="title">Система сбора монеток</h1>
+                <h2 class="subtitle">Полное руководство по разработке в Roblox Studio</h2>
+                <p class="author">Презентация урока для класса</p>
+                <div class="tech-stack">
+                    <div class="tech-item">
+                        <div class="tech-icon">🔥</div>
+                        <div class="tech-name">Lua Scripting</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">🎨</div>
+                        <div class="tech-name">UI Design</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">💾</div>
+                        <div class="tech-name">DataStore</div>
+                    </div>
+                    <div class="tech-item">
+                        <div class="tech-icon">⚡</div>
+                        <div class="tech-name">RemoteEvents</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Остальные слайды остаются с аналогичной структурой, но адаптированной -->
+        <!-- Слайд 2: План разработки -->
+        <div class="presentation" id="slide2">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-road"></i>
+                    План разработки
+                </h2>
+                
+                <div class="step-container">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <i class="fas fa-cube"></i>
+                            Создание модели монетки
+                        </h3>
+                        <p class="step-description">
+                            Разрабатываем 3D модель монетки с анимацией вращения, 
+                            частицами и визуальными эффектами
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step-container">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <i class="fas fa-code"></i>
+                            Логика сбора монеток
+                        </h3>
+                        <p class="step-description">
+                            Пишем скрипт для обработки касаний игрока, 
+                            воспроизведения звуков и уничтожения монетки после сбора
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step-container">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <i class="fas fa-database"></i>
+                            Система хранения данных
+                        </h3>
+                        <p class="step-description">
+                            Создаем центральную систему для управления счетами игроков 
+                            и сохранения прогресса между сессиями
+                        </p>
+                    </div>
+                </div>
+
+                <div class="step-container">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h3 class="step-title">
+                            <i class="fas fa-desktop"></i>
+                            Пользовательский интерфейс
+                        </h3>
+                        <p class="step-description">
+                            Разрабатываем красивый UI для отображения счета 
+                            с анимациями и визуальными эффектами
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 3: Архитектура системы -->
+        <div class="presentation" id="slide3">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-sitemap"></i>
+                    Архитектура системы
+                </h2>
+                
+                <div class="content-grid">
+                    <div class="text-content">
+                        <p class="slide-text">Система построена по модульному принципу:</p>
+                        
+                        <div class="file-structure">
+                            <span style="color: var(--primary)">📁 RobloxGame</span><br>
+                            &nbsp;&nbsp;<span style="color: var(--secondary)">📁 ServerStorage</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── <span style="color: var(--accent)">📁 CoinTemplate</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 💰 Part<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 📜 CoinScript<br>
+                            &nbsp;&nbsp;<span style="color: var(--secondary)">📁 ServerScriptService</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── ⚙️ CoinSystem<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🎪 CoinSpawner<br>
+                            &nbsp;&nbsp;<span style="color: var(--secondary)">📁 StarterGui</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🎨 UIController<br>
+                            &nbsp;&nbsp;<span style="color: var(--secondary)">📁 ReplicatedStorage</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 🔄 CoinCollected<br>
+                        </div>
+                    </div>
+                    
+                    <div class="code-content">
+                        <span class="comment">-- Взаимодействие компонентов:</span><br><br>
+                        
+                        <span class="comment">-- 1. Игрок касается монетки</span><br>
+                        <span class="code-highlight">CoinScript</span> → <span class="code-highlight">CoinCollected</span><br><br>
+                        
+                        <span class="comment">-- 2. Сервер обрабатывает событие</span><br>
+                        <span class="code-highlight">CoinSystem</span> → <span class="code-highlight">DataStore</span><br><br>
+                        
+                        <span class="comment">-- 3. Обновление интерфейса</span><br>
+                        <span class="code-highlight">CoinSystem</span> → <span class="code-highlight">UIController</span><br><br>
+                        
+                        <span class="comment">-- 4. Респавн монеток</span><br>
+                        <span class="code-highlight">CoinSpawner</span> → <span class="code-highlight">Workspace</span><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 4: Шаг 1 - Модель монетки -->
+        <div class="presentation" id="slide4">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-cube"></i>
+                    Шаг 1: Создание модели монетки
+                </h2>
+                
+                <div class="content-grid">
+                    <div class="text-content">
+                        <div class="step-container">
+                            <div class="step-number">1.1</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Базовая часть</h3>
+                                <p class="step-description">
+                                    Создаем Part с размерами и материалом, 
+                                    настраиваем CanCollide и Anchored
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">1.2</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Визуальные эффекты</h3>
+                                <p class="step-description">
+                                    Добавляем ParticleEmitter для блеска, 
+                                    PointLight для свечения
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">1.3</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Анимация</h3>
+                                <p class="step-description">
+                                    Реализуем плавное вращение вокруг своей оси 
+                                    с помощью CFrame
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-content">
+                        <span class="comment">-- CoinScript: Основная логика</span><br><br>
+                        
+                        <span class="keyword">local</span> coin = script.Parent<br>
+                        <span class="keyword">local</span> debounce = <span class="keyword">false</span><br><br>
+                        
+                        <span class="comment">-- Анимация вращения</span><br>
+                        <span class="keyword">local function</span> rotateCoin()<br>
+                        &nbsp;&nbsp;<span class="keyword">while</span> coin <span class="keyword">and</span> coin.Parent <span class="keyword">do</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;coin.CFrame = coin.CFrame * CFrame.Angles(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0, math.rad(3), 0)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;wait()<br>
+                        &nbsp;&nbsp;<span class="keyword">end</span><br>
+                        <span class="keyword">end</span><br><br>
+                        
+                        <span class="comment">-- Обработка касания</span><br>
+                        coin.Touched:Connect(<span class="keyword">function</span>(hit)<br>
+                        &nbsp;&nbsp;<span class="keyword">if</span> debounce <span class="keyword">then return end</span><br>
+                        &nbsp;&nbsp;debounce = <span class="keyword">true</span><br>
+                        &nbsp;&nbsp;<span class="comment">-- Уведомляем систему о сборе</span><br>
+                        &nbsp;&nbsp;game.ReplicatedStorage.CoinCollected:FireServer()<br>
+                        <span class="keyword">end</span>)<br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 5: Шаг 2 - Логика сбора -->
+        <div class="presentation" id="slide5">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-code"></i>
+                    Шаг 2: Логика сбора монеток
+                </h2>
+                
+                <div class="content-grid">
+                    <div class="text-content">
+                        <div class="step-container">
+                            <div class="step-number">2.1</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Защита от повторных срабатываний</h3>
+                                <p class="step-description">
+                                    Используем debounce переменную для предотвращения 
+                                    многократного сбора одной монетки
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">2.2</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Анимация исчезновения</h3>
+                                <p class="step-description">
+                                    Плавное увеличение прозрачности и размера 
+                                    перед уничтожением монетки
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">2.3</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Звуковые эффекты</h3>
+                                <p class="step-description">
+                                    Воспроизведение звука сбора и автоматическое 
+                                    удаление звукового объекта
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-content">
+                        <span class="comment">-- Обработка касания с анимацией</span><br><br>
+                        
+                        <span class="keyword">local function</span> onTouched(hit)<br>
+                        &nbsp;&nbsp;<span class="keyword">if</span> debounce <span class="keyword">then return end</span><br>
+                        &nbsp;&nbsp;debounce = <span class="keyword">true</span><br><br>
+                        
+                        &nbsp;&nbsp;<span class="comment">-- Анимация исчезновения</span><br>
+                        &nbsp;&nbsp;<span class="keyword">for</span> i = 1, 3 <span class="keyword">do</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">if</span> coinPart <span class="keyword">then</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;coinPart.Transparency = i * 0.3<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;coinPart.Size = coinPart.Size * 1.2<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;wait(0.1)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">end</span><br>
+                        &nbsp;&nbsp;<span class="keyword">end</span><br><br>
+                        
+                        &nbsp;&nbsp;<span class="comment">-- Уведомление системы</span><br>
+                        &nbsp;&nbsp;<span class="keyword">if</span> _G.CoinSystem <span class="keyword">then</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;_G.CoinSystem.addCoin(player, 1)<br>
+                        &nbsp;&nbsp;<span class="keyword">end</span><br><br>
+                        
+                        &nbsp;&nbsp;<span class="comment">-- Уничтожение монетки</span><br>
+                        &nbsp;&nbsp;coin:Destroy()<br>
+                        <span class="keyword">end</span><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 6: Шаг 3 - Система данных -->
+        <div class="presentation" id="slide6">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-database"></i>
+                    Шаг 3: Система хранения данных
+                </h2>
+                
+                <div class="content-grid">
+                    <div class="text-content">
+                        <div class="step-container">
+                            <div class="step-number">3.1</div>
+                            <div class="step-content">
+                                <h3 class="step-title">DataStore</h3>
+                                <p class="step-description">
+                                    Используем Roblox DataStore для сохранения 
+                                    прогресса между сессиями
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">3.2</div>
+                            <div class="step-content">
+                                <h3 class="step-title">RemoteEvents</h3>
+                                <p class="step-description">
+                                    Создаем безопасную связь между клиентом и сервером 
+                                    через RemoteEvent
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">3.3</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Обработка ошибок</h3>
+                                <p class="step-description">
+                                    Добавляем pcall для безопасной работы с DataStore 
+                                    и обработки исключений
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-content">
+                        <span class="comment">-- CoinSystem: Управление данными</span><br><br>
+                        
+                        <span class="keyword">local</span> Players = game:GetService(<span class="string">"Players"</span>)<br>
+                        <span class="keyword">local</span> DataStoreService = game:GetService(<br>
+                        &nbsp;&nbsp;<span class="string">"DataStoreService"</span>)<br><br>
+                        
+                        <span class="comment">-- Загрузка данных игрока</span><br>
+                        <span class="keyword">local function</span> loadPlayerData(player)<br>
+                        &nbsp;&nbsp;<span class="keyword">local</span> success, data = pcall(<span class="keyword">function</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="keyword">return</span> coinsDataStore:GetAsync(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"player_"</span> .. player.UserId)<br>
+                        &nbsp;&nbsp;<span class="keyword">end</span>)<br>
+                        &nbsp;&nbsp;<span class="keyword">return</span> success <span class="keyword">and</span> data <span class="keyword">or</span> 0<br>
+                        <span class="keyword">end</span><br><br>
+                        
+                        <span class="comment">-- Сохранение данных</span><br>
+                        <span class="keyword">local function</span> savePlayerData(player)<br>
+                        &nbsp;&nbsp;<span class="keyword">local</span> success = pcall(<span class="keyword">function</span>()<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;coinsDataStore:SetAsync(<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"player_"</span> .. player.UserId, <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;playerCoins[player])<br>
+                        &nbsp;&nbsp;<span class="keyword">end</span>)<br>
+                        &nbsp;&nbsp;<span class="keyword">return</span> success<br>
+                        <span class="keyword">end</span><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 7: Шаг 4 - Интерфейс -->
+        <div class="presentation" id="slide7">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-desktop"></i>
+                    Шаг 4: Пользовательский интерфейс
+                </h2>
+                
+                <div class="content-grid">
+                    <div class="text-content">
+                        <div class="step-container">
+                            <div class="step-number">4.1</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Создание UI элементов</h3>
+                                <p class="step-description">
+                                    Программно создаем ScreenGui, Frame, TextLabel 
+                                    с красивым оформлением
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">4.2</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Анимации</h3>
+                                <p class="step-description">
+                                    Используем TweenService для плавных анимаций 
+                                    при изменении счета
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="step-container">
+                            <div class="step-number">4.3</div>
+                            <div class="step-content">
+                                <h3 class="step-title">Обработка событий</h3>
+                                <p class="step-description">
+                                    Настраиваем обработчик RemoteEvent для 
+                                    автоматического обновления интерфейса
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="code-content">
+                        <span class="comment">-- UIController: Интерфейс игрока</span><br><br>
+                        
+                        <span class="keyword">local</span> Players = game:GetService(<span class="string">"Players"</span>)<br>
+                        <span class="keyword">local</span> TweenService = game:GetService(<br>
+                        &nbsp;&nbsp;<span class="string">"TweenService"</span>)<br><br>
+                        
+                        <span class="comment">-- Создание UI</span><br>
+                        <span class="keyword">local</span> screenGui = Instance.new(<span class="string">"ScreenGui"</span>)<br>
+                        <span class="keyword">local</span> frame = Instance.new(<span class="string">"Frame"</span>)<br>
+                        <span class="keyword">local</span> coinText = Instance.new(<span class="string">"TextLabel"</span>)<br><br>
+                        
+                        <span class="comment">-- Анимация обновления счета</span><br>
+                        <span class="keyword">local function</span> updateCoinText(newCount)<br>
+                        &nbsp;&nbsp;<span class="keyword">local</span> tween = TweenService:Create(coinText, <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;TweenInfo.new(0.3), {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TextSize = 32,<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;TextColor3 = Color3.new(1, 1, 1)<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;})<br>
+                        &nbsp;&nbsp;tween:Play()<br>
+                        &nbsp;&nbsp;coinText.Text = newCount<br>
+                        <span class="keyword">end</span><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 8: Результаты -->
+        <div class="presentation" id="slide8">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-trophy"></i>
+                    Достигнутые результаты
+                </h2>
+                
+                <div class="content-grid-3">
+                    <div class="tech-item">
+                        <div class="tech-icon">✅</div>
+                        <div class="tech-name">Рабочая система сбора</div>
+                        <p class="step-description">
+                            Монетки корректно собираются и исчезают
+                        </p>
+                    </div>
+                    
+                    <div class="tech-item">
+                        <div class="tech-icon">💾</div>
+                        <div class="tech-name">Сохранение прогресса</div>
+                        <p class="step-description">
+                            Данные сохраняются между сессиями
+                        </p>
+                    </div>
+                    
+                    <div class="tech-item">
+                        <div class="tech-icon">🎨</div>
+                        <div class="tech-name">Красивый интерфейс</div>
+                        <p class="step-description">
+                            Анимированный UI с подсчетом очков
+                        </p>
+                    </div>
+                    
+                    <div class="tech-item">
+                        <div class="tech-icon">🔊</div>
+                        <div class="tech-name">Звуковые эффекты</div>
+                        <p class="step-description">
+                            Реализованы звуки сбора и фоновые эффекты
+                        </p>
+                    </div>
+                    
+                    <div class="tech-item">
+                        <div class="tech-icon">🔄</div>
+                        <div class="tech-name">Авто-респавн</div>
+                        <p class="step-description">
+                            Монетки автоматически появляются снова
+                        </p>
+                    </div>
+                    
+                    <div class="tech-item">
+                        <div class="tech-icon">⚡</div>
+                        <div class="tech-name">Оптимизация</div>
+                        <p class="step-description">
+                            Эффективное использование ресурсов
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="slide-text" style="text-align: center; margin-top: 25px;">
+                    <strong>Система полностью готова к использованию в реальных проектах!</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 9: Демонстрация -->
+        <div class="presentation" id="slide9">
+            <div class="slide">
+                <h2 class="slide-title">
+                    <i class="fas fa-video"></i>
+                    Демонстрация работы
+                </h2>
+                
+                <div class="video-container">
+                    <h3 style="color: var(--primary); font-size: clamp(1.3em, 3vw, 2em); margin-bottom: 15px;">
+                        Видео демонстрация системы
+                    </h3>
+                    
+                    <div class="video-placeholder">
+                        <i class="fas fa-play-circle" style="font-size: clamp(2em, 6vw, 4em); color: var(--primary); margin-bottom: 15px;"></i>
+                        <p style="font-size: clamp(1em, 2.5vw, 1.3em); color: var(--text-secondary);">
+                            Демонстрационное видео работы системы
+                        </p>
+                        <p style="font-size: clamp(0.9em, 2.2vw, 1.1em); color: var(--text-secondary); margin-top: 12px;">
+                            Показывает сбор монеток, обновление интерфейса и сохранение данных
+                        </p>
+                    </div>
+                    
+                    <div class="github-section">
+                        <a href="https://github.com/your-username/roblox-coin-system/video/demo.mp4" 
+                           class="github-btn" target="_blank">
+                            <i class="fas fa-download"></i>
+                            Скачать видео
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="slide-text" style="text-align: center; margin-top: 20px;">
+                    Видео показывает полный цикл работы: от сбора монетки до сохранения данных
+                </div>
+            </div>
+        </div>
+
+        <!-- Слайд 10: Ресурсы -->
+        <div class="presentation" id="slide10">
+            <div class="slide title-slide">
+                <h2 class="title">Ресурсы и материалы</h2>
+                <p class="subtitle">Все необходимые файлы и ссылки</p>
+                
+                <div class="github-section">
+                    <a href="https://github.com/your-username/roblox-coin-system" 
+                       class="github-btn" target="_blank">
+                        <i class="fab fa-github"></i>
+                        GitHub репозиторий
+                    </a>
+                    
+                    <a href="https://github.com/your-username/roblox-coin-system/blob/main/CoinSystem.lua" 
+                       class="github-btn" target="_blank">
+                        <i class="fas fa-file-code"></i>
+                        CoinSystem.lua
+                    </a>
+                    
+                    <a href="https://github.com/your-username/roblox-coin-system/blob/main/CoinScript.lua" 
+                       class="github-btn" target="_blank">
+                        <i class="fas fa-file-code"></i>
+                        CoinScript.lua
+                    </a>
+                    
+                    <a href="https://github.com/your-username/roblox-coin-system/blob/main/UIController.lua" 
+                       class="github-btn" target="_blank">
+                        <i class="fas fa-file-code"></i>
+                        UIController.lua
+                    </a>
+                    
+                    <a href="https://github.com/your-username/roblox-coin-system/blob/main/CoinSpawner.lua" 
+                       class="github-btn" target="_blank">
+                        <i class="fas fa-file-code"></i>
+                        CoinSpawner.lua
+                    </a>
+
+                    <a href="https://github.com/your-username/roblox-coin-system/blob/main/README.md" 
+                       class="github-btn" target="_blank">
+                        <i class="fas fa-book"></i>
+                        Документация
+                    </a>
+                </div>
+                
+                <div class="author" style="margin-top: 40px;">
+                    Спасибо за внимание!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 10;
+
+        function showSlide(slideNumber) {
+            // Скрыть все слайды
+            document.querySelectorAll('.presentation').forEach(slide => {
+                slide.classList.remove('active');
+            });
+            
+            // Показать выбранный слайд
+            document.getElementById(`slide${slideNumber}`).classList.add('active');
+            
+            // Обновить прогресс бар
+            document.getElementById('progress').style.width = `${(slideNumber / totalSlides) * 100}%`;
+            
+            // Обновить счетчик
+            document.getElementById('slideCounter').textContent = `${slideNumber} / ${totalSlides}`;
+            
+            currentSlide = slideNumber;
+
+            // Прокрутить к верху слайда
+            window.scrollTo(0, 0);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        // Управление клавиатурой
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') nextSlide();
+            if (e.key === 'ArrowLeft' || e.key === 'PageUp') prevSlide();
+            if (e.key === 'Home') showSlide(1);
+            if (e.key === 'End') showSlide(totalSlides);
+        });
+
+        // Swipe поддержка для мобильных устройств
+        let touchStartX = 0;
+        let touchEndX = 0;
+        let touchStartY = 0;
+        let touchEndY = 0;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+            touchStartY = e.changedTouches[0].screenY;
+        });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            touchEndY = e.changedTouches[0].screenY;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+            
+            // Проверяем, что это горизонтальный свайп, а не вертикальный
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > swipeThreshold) {
+                if (diffX > 0) {
+                    nextSlide();
+                } else {
+                    prevSlide();
+                }
+            }
+        }
+
+        // Автоматическое скрытие мобильного предупреждения
+        setTimeout(() => {
+            const warning = document.querySelector('.mobile-warning');
+            if (warning) {
+                warning.style.opacity = '0';
+                setTimeout(() => warning.style.display = 'none', 1000);
+            }
+        }, 5000);
+
+        // Инициализация
+        showSlide(1);
+
+        // Предотвращение масштабирования на мобильных (опционально)
+        document.addEventListener('touchmove', function(e) {
+            if (e.scale !== 1) { e.preventDefault(); }
+        }, { passive: false });
+    </script>
+</body>
+</html>
